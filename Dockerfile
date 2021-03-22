@@ -2,18 +2,20 @@
 #                by the LTB Project
 # https://ltb-project.org/documentation/self-service-password
 
-FROM php:7.3-apache-stretch
-
-LABEL maintainer="jens@pfeifle.tech"
+FROM php:8.0.3-apache-buster
 
 RUN apt-get update -q && apt-get upgrade -y \
-        && apt install -y libldap2-dev \
+        && apt-get install -y libldap2-dev \
         && rm -rf /var/lib/apt/lists/* \
         && docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu \
         && docker-php-ext-install ldap
 
+RUN curl -O https://ltb-project.org/archives/ltb-project-self-service-password-1.3.tar.gz \
+        && tar -zxf ltb-project-self-service-password-1.3.tar.gz \
+        && rm -f ltb-project-self-service-password-1.3.tar.gz \
+        && mv ltb-project-self-service-password-1.3 /usr/share/self-service-password
+
 COPY ./apache.conf /etc/apache2/sites-available/000-default.conf
-COPY ./ldapssp /var/local/ldapssp
 
 RUN mkdir -p /config
 RUN ln -sf /config/config.inc.local.php /var/local/ldapssp/conf/config.inc.local.php
